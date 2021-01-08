@@ -1,5 +1,7 @@
 #include <windows.h>
 
+
+//TODO: switch out from WSL, read up PlaySound
 HHOOK hHook;
 
 LRESULT CALLBACK LowLevelKeyboardProc( int nCode, WPARAM wParam, LPARAM lParam )

@@ -1,13 +1,15 @@
 #include <windows.h>
+// #include <stdio.h>
+#include <iostream>
 
-
-//TODO: switch out from WSL, read up PlaySound
 HHOOK hHook;
-
-LRESULT CALLBACK LowLevelKeyboardProc( int nCode, WPARAM wParam, LPARAM lParam )
+// https://stackoverflow.com/questions/25450168/setwindowshookex-freezes-on-fast-input-or-keyboard-button-hold
+// TODO: unstuck SetWindowsHookEx, duplicate keyup callbacks
+// TODO: remember last key states?
+LRESULT CALLBACK LowLevelKeyboardProc(int nCode, WPARAM wParam, LPARAM lParam)
 {
     if (nCode < 0 || nCode != HC_ACTION )  // do not process message 
-        return CallNextHookEx( g_hKeyboardHook, nCode, wParam, lParam); 
+        return CallNextHookEx(hHook, nCode, wParam, lParam); 
  
     KBDLLHOOKSTRUCT* p = (KBDLLHOOKSTRUCT*)lParam;
     switch (wParam)
@@ -15,9 +17,21 @@ LRESULT CALLBACK LowLevelKeyboardProc( int nCode, WPARAM wParam, LPARAM lParam )
         case WM_KEYDOWN:
         case WM_KEYUP:
         {
-            cout << p->vkCode << " key\n";
+            std::cout << p->vkCode << " key\n";
             break;
         }
     }
-    return CallNextHookEx( g_hKeyboardHook, nCode, wParam, lParam );
+    return CallNextHookEx(hHook, nCode, wParam, lParam );
+}
+
+int WINAPI WinMain(HINSTANCE hInstance, HINSTANCE hPrevInstance, LPSTR lpCmdLine, int nCmdShow)
+{
+  hHook = SetWindowsHookEx(WH_KEYBOARD_LL, LowLevelKeyboardProc, hInstance, 0);
+  MSG msg;
+  while(GetMessage(&msg, NULL, 0, 0))
+  {
+    TranslateMessage(&msg);
+    DispatchMessage(&msg);
+  }
+  return msg.wParam;
 }
